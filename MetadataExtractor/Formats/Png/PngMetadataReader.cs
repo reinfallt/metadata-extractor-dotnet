@@ -247,7 +247,7 @@ namespace MetadataExtractor.Formats.Png
 
                 if (textBytes != null)
                 {
-                    foreach (var directory in ProcessTextChunk(keyword, textBytes))
+                    foreach (var directory in ProcessTextChunk(keyword, textBytes, _latin1Encoding))
                     {
                         yield return directory;
                     }
@@ -297,7 +297,7 @@ namespace MetadataExtractor.Formats.Png
 
                 if (textBytes != null)
                 {
-                    foreach (var directory in ProcessTextChunk(keyword, textBytes))
+                    foreach (var directory in ProcessTextChunk(keyword, textBytes, Encoding.UTF8))
                     {
                         yield return directory;
                     }
@@ -366,7 +366,7 @@ namespace MetadataExtractor.Formats.Png
 
             yield break;
 
-            IEnumerable<Directory> ProcessTextChunk(string keyword, byte[] textBytes)
+            IEnumerable<Directory> ProcessTextChunk(string keyword, byte[] textBytes, Encoding encoding)
             {
                 if (keyword == "XML:com.adobe.xmp")
                 {
@@ -380,7 +380,7 @@ namespace MetadataExtractor.Formats.Png
                     }
                     else
                     {
-                        yield return ReadTextDirectory(keyword, textBytes, chunkType);
+                        yield return ReadTextDirectory(keyword, textBytes, chunkType, encoding);
                     }
                 }
                 else if (keyword == "Raw profile type exif" || keyword == "Raw profile type APP1")
@@ -396,7 +396,7 @@ namespace MetadataExtractor.Formats.Png
                     }
                     else
                     {
-                        yield return ReadTextDirectory(keyword, textBytes, chunkType);
+                        yield return ReadTextDirectory(keyword, textBytes, chunkType, encoding);
                     }
                 }
                 else if (keyword == "Raw profile type icc" || keyword == "Raw profile type icm")
@@ -407,7 +407,7 @@ namespace MetadataExtractor.Formats.Png
                     }
                     else
                     {
-                        yield return ReadTextDirectory(keyword, textBytes, chunkType);
+                        yield return ReadTextDirectory(keyword, textBytes, chunkType, encoding);
                     }
                 }
                 else if (keyword == "Raw profile type iptc")
@@ -430,17 +430,17 @@ namespace MetadataExtractor.Formats.Png
                     }
                     else
                     {
-                        yield return ReadTextDirectory(keyword, textBytes, chunkType);
+                        yield return ReadTextDirectory(keyword, textBytes, chunkType, encoding);
                     }
                 }
                 else
                 {
-                    yield return ReadTextDirectory(keyword, textBytes, chunkType);
+                    yield return ReadTextDirectory(keyword, textBytes, chunkType, encoding);
                 }
 
-                static PngDirectory ReadTextDirectory(string keyword, byte[] textBytes, PngChunkType pngChunkType)
+                static PngDirectory ReadTextDirectory(string keyword, byte[] textBytes, PngChunkType pngChunkType, Encoding encoding)
                 {
-                    var textPairs = new[] { new KeyValuePair(keyword, new StringValue(textBytes, _latin1Encoding)) };
+                    var textPairs = new[] { new KeyValuePair(keyword, new StringValue(textBytes, encoding)) };
                     var directory = new PngDirectory(pngChunkType);
                     directory.Set(PngDirectory.TagTextualData, textPairs);
                     return directory;
